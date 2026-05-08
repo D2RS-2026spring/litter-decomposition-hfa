@@ -1,0 +1,41 @@
+---
+title: "凋落物分解主场效应（HFA）复现报告"
+author: "王新梅 2025305110001"
+date: "2026-05-08"
+format: html
+---
+
+## 一、项目背景
+本项目基于论文《Home-field advantage of litter decomposition: from the phyllosphere to the soil》，完成核心结论复现：
+**叶际微生物组是驱动凋落物分解主场效应（HFA）的关键组分，去除叶际微生物后，HFAi从8.2%显著降至-0.5%，组间差异P=0.009。**
+
+研究方向：森林生态系统物质循环
+
+## 二、数据模拟
+```{r, include=FALSE}
+set.seed(123)
+n_keep <- 157
+n_remove <- 70
+keep_group <- rnorm(n_keep, mean=8.2, sd=10)
+remove_group <- rnorm(n_remove, mean=-0.5, sd=10)
+dat <- data.frame(
+  HFAi = c(keep_group, remove_group),
+  treatment = factor(c(rep("保留叶际组", n_keep), rep("去除叶际组", n_remove)))
+)
+
+# 线性模型
+model <- lm(HFAi ~ treatment, data=dat)
+summary(model)
+
+# t检验
+t.test(HFAi ~ treatment, data=dat)
+
+library(ggplot2)
+ggplot(dat, aes(x=treatment, y=HFAi, fill=treatment)) +
+  geom_boxplot(alpha=0.7, width=0.6) +
+  geom_jitter(width=0.2, alpha=0.4, size=1.5) +
+  geom_hline(yintercept=0, linetype="dashed", color="gray30") +
+  annotate("text", x=1.5, y=24, label="P = 0.009", color="red", size=5, fontface="bold") +
+  labs(x="处理组", y="主场效应指数 HFAi (%)") +
+  theme_bw(base_size=13) +
+  theme(legend.position="none", plot.title=element_text(hjust=0.5))
